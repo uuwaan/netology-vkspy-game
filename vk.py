@@ -29,10 +29,11 @@ class API:
     _VKS_REQ_POSVAR = "pos"
     _VKS_API_PREFIX = "API."
 
-    def __init__(self, api_ver, api_token, rlim_lock=None):
+    def __init__(self, api_ver, api_token, rlim_lock=None, pulse_callback=None):
         self._api_ver = api_ver
         self._api_token = api_token
         self._rlock = rlim_lock
+        self._pulse = pulse_callback
 
     def vk_user(self, ident):
         return next(self.vk_user_iter([ident]))
@@ -71,6 +72,8 @@ class API:
         resp_json = resp.json().get("response")
         if resp_json is None:
             raise RuntimeError(_ERR_NORESPONSE.format(resp.content))
+        if self._pulse:
+            self._pulse()
         return resp_json
 
     def _request_chunked(self, method, params):
