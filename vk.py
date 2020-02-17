@@ -6,8 +6,8 @@ import time
 import requests
 import requests.exceptions
 
-_ERR_APICALL = "Запрос завершился с ошибкой {0}: {1}"
-_ERR_NORESPONSE = "Ответ сервера не содержит запрошенные данные:\n{0}"
+_ERR_APICALL = "Response contains error {0}: {1}"
+_ERR_NODATA = "Server response didn't contain requested data:\n{0}"
 
 
 class API:
@@ -110,7 +110,7 @@ class API:
                 resp_error["error_code"], resp_error["error_msg"]
             ))
         if resp_body is None:
-            raise RuntimeError(_ERR_NORESPONSE.format(resp.content))
+            raise RuntimeError(_ERR_NODATA.format(resp.content))
         if self._pulse:
             self._pulse()
         return resp_body
