@@ -45,7 +45,7 @@ class API:
                 "user_ids": ",".join(str(uid) for uid in id_chunk),
             })
             result.extend(req_result)
-        return (User.from_dict(u, self) for u in result)
+        return (User.from_dict(u) for u in result)
 
     def vk_group(self, ident):
         return next(self.vk_group_iter([ident]))
@@ -58,7 +58,7 @@ class API:
                 "fields": "members_count",
             })
             result.extend(req_result)
-        return (Group.from_dict(u, self) for u in result)
+        return (Group.from_dict(u) for u in result)
 
     def _request(self, method, params):
         if self._rlock:
@@ -126,30 +126,30 @@ class API:
         return "".join([qmark, s.replace(qmark, "\\" + qmark), qmark])
 
 
-class User(namedtuple("User", "first_name last_name uid active api")):
+class User(namedtuple("User", "first_name last_name uid active")):
     @classmethod
-    def from_dict(cls, udict, api):
+    def from_dict(cls, udict):
         act = False if udict.get("deactivated") else True
-        return cls(udict["first_name"], udict["last_name"], udict["id"], act, api)
+        return cls(udict["first_name"], udict["last_name"], udict["id"], act)
 
-    def friend_ids(self):
-        return self.api._request_chunked("friends.get", {
+    def friend_ids(self, api):
+        return api._request_chunked("friends.get", {
             "user_id": self.uid,
         })
 
-    def group_ids(self):
-        return self.api._request_chunked("groups.get", {
+    def group_ids(self, api):
+        return api._request_chunked("groups.get", {
             "user_id": self.uid,
         })
 
 
-class Group(namedtuple("Group", "name gid members_count api")):
+class Group(namedtuple("Group", "name gid members_count")):
     @classmethod
-    def from_dict(cls, gdict, api):
-        return cls(gdict["name"], gdict["id"], gdict["members_count"], api)
+    def from_dict(cls, gdict):
+        return cls(gdict["name"], gdict["id"], gdict["members_count"])
 
-    def member_ids(self):
-        return self.api._request_chunked("groups.getMembers", {
+    def member_ids(self, api):
+        return api._request_chunked("groups.getMembers", {
             "group_id": self.gid,
         })
 

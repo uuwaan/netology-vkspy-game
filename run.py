@@ -21,10 +21,10 @@ with open("api_token.txt", "r") as api_file:
 vk_limiter = ratelim.TokenBucket(API_RATE, API_BURST)
 vk_api = vk.API(API_VER, vk_token, vk_limiter.wait, display_pulse)
 vk_user = vk_api.vk_user(VK_USER)
-usr_friends = set(vk_user.friend_ids())
+usr_friends = set(vk_user.friend_ids(vk_api))
 grp_list = []
-for vk_grp in vk_api.vk_group_iter(vk_user.group_ids()):
-    grp_members = set(vk_grp.member_ids())
+for vk_grp in vk_api.vk_group_iter(vk_user.group_ids(vk_api)):
+    grp_members = set(vk_grp.member_ids(vk_api))
     grp_friends = [
         u for u in vk_api.vk_user_iter(grp_members & usr_friends)
         if u.active
