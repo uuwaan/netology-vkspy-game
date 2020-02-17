@@ -34,14 +34,6 @@ for vk_grp in vk_api.vk_group_iter(vk_user.group_ids(vk_api)):
             "name": vk_grp.name,
             "gid": vk_grp.gid,
             "members_count": vk_grp.members_count,
-            "friends_here": [
-                {
-                    "first_name": u.first_name,
-                    "last_name": u.last_name,
-                    "uid": u.uid,
-                }
-                for u in grp_friends
-            ],
         })
 
 with open("groups.json", "w") as out_file:
