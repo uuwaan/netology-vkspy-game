@@ -41,11 +41,12 @@ class API:
     _MAX_RETRIES = 3
     _REQ_TIMEOUT = 30
 
-    def __init__(self, api_ver, api_tok, rlock=None, pulse=None):
+    def __init__(self, api_ver, api_tok, rlock=None, pulse=None, cctl=False):
         self._api_ver = api_ver
         self._api_token = api_tok
         self._rlock = rlock
         self._pulse = pulse
+        self._count_ctl = cctl
 
     def vk_user(self, ident):
         return next(self.vk_user_iter([ident]))
@@ -89,7 +90,7 @@ class API:
             req_result = self._request("execute", {"code": vk_script})
             new_count, offset = int(req_result["count"]), int(req_result["offset"])
             if new_count != count:
-                if count is not None:
+                if count is not None and self._count_ctl:
                     raise RuntimeError(_ERR_MISMATCH.format(new_count, count))
                 else:
                     count = new_count
