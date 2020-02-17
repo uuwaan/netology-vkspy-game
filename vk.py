@@ -139,9 +139,7 @@ class API:
     @classmethod
     def _vks_qparam(cls, param, qmark):
         if isinstance(param, str):
-            if param.startswith(cls._VKS_API_PREFIX):
-                return param
-            elif param.startswith(cls._VKS_CALLSTR_ESCAPE):
+            if param.startswith(cls._VKS_CALLSTR_ESCAPE):
                 return param.lstrip(cls._VKS_CALLSTR_ESCAPE)
             else:
                 return cls._vks_qstr(param, qmark)
