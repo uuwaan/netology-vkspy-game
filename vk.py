@@ -14,7 +14,6 @@ _ERR_NOTUSER = "Идентификатор не принадлежит поль�
 class API:
     _API_URL = "https://api.vk.com/method/"
 
-    _VKS_ACL = 25
     _VKS_REQ_POSVAR = "pos"
     _VKS_REQ_CHUNKED = string.Template("""
         var acl = $api_limit;
@@ -36,8 +35,6 @@ class API:
         }
         return {"count": count, "offset": pos, "items": items};
     """)
-    _VKS_CALLSTR_ESCAPE = "$"
-    _VKS_API_PREFIX = "API."
 
     _ERRCODE_REQLIMIT = 6
     _API_THROTTLE_DELAY = 1
@@ -117,14 +114,14 @@ class API:
 
     def _request_chunked(self, method, params):
         offset, count, elems = 0, None, []
-        req_str = self._vks_callstr(method, dict(
+        req_str = VKScript.call_string(method, dict(
             params,
-            offset=self._VKS_CALLSTR_ESCAPE + self._VKS_REQ_POSVAR,
+            offset=VKScript.CALLSTR_ESCAPE + self._VKS_REQ_POSVAR,
             v=self._api_ver,
         ))
         while offset != count:
             vk_script = self._VKS_REQ_CHUNKED.substitute(
-                api_limit=self._VKS_ACL,
+                api_limit=VKScript.API_CALL_LIMIT,
                 offset=offset,
                 req=req_str,
             )
@@ -133,30 +130,6 @@ class API:
             count, offset = int(req_result["count"]), int(req_result["offset"])
             elems.extend(req_result["items"])
         return elems
-
-    @classmethod
-    def _vks_callstr(cls, method, params):
-        p_pairs = []
-        for p_name, p_val in params.items():
-            p_name = cls._vks_qstr(p_name, '"')
-            p_val = cls._vks_qparam(p_val, '"')
-            p_pairs.append(": ".join([p_name, p_val]))
-        param_str = "".join(["{", ", ".join(p_pairs), "}"])
-        return "{0}({1})".format(cls._VKS_API_PREFIX + method, param_str)
-
-    @classmethod
-    def _vks_qparam(cls, param, qmark):
-        if isinstance(param, str):
-            if param.startswith(cls._VKS_CALLSTR_ESCAPE):
-                return param.lstrip(cls._VKS_CALLSTR_ESCAPE)
-            else:
-                return cls._vks_qstr(param, qmark)
-        else:
-            return str(param)
-
-    @classmethod
-    def _vks_qstr(cls, s, qmark):
-        return "".join([qmark, s.replace(qmark, "\\" + qmark), qmark])
 
 
 class User(namedtuple("User", "first_name last_name uid active")):
@@ -185,6 +158,37 @@ class Group(namedtuple("Group", "name gid members_count")):
         return api._request_chunked("groups.getMembers", {
             "group_id": self.gid,
         })
+
+
+class VKScript:
+    API_PREFIX = "API."
+    API_CALL_LIMIT = 25
+    CALLSTR_ESCAPE = "$"
+    QMARK = '"'
+
+    @classmethod
+    def call_string(cls, method, params):
+        p_pairs = []
+        for p_name, p_val in params.items():
+            p_name = cls.quoted_string(p_name, cls.QMARK)
+            p_val = cls.quoted_value(p_val, cls.QMARK)
+            p_pairs.append(": ".join([p_name, p_val]))
+        param_str = "".join(["{", ", ".join(p_pairs), "}"])
+        return "{0}({1})".format(cls.API_PREFIX + method, param_str)
+
+    @classmethod
+    def quoted_value(cls, param, qmark):
+        if isinstance(param, str):
+            if param.startswith(cls.CALLSTR_ESCAPE):
+                return param.lstrip(cls.CALLSTR_ESCAPE)
+            else:
+                return cls.quoted_string(param, qmark)
+        else:
+            return str(param)
+
+    @classmethod
+    def quoted_string(cls, s, qmark):
+        return "".join([qmark, s.replace(qmark, "\\" + qmark), qmark])
 
 
 def _ichopped(iterable, chunk_size):
