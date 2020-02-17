@@ -1,6 +1,7 @@
 from collections import namedtuple
 import string
 import itertools
+import time
 import requests
 import requests.exceptions
 
@@ -32,6 +33,9 @@ class API:
     _VKS_CALLSTR_ESCAPE = "$"
     _VKS_REQ_POSVAR = "pos"
     _VKS_API_PREFIX = "API."
+
+    _ERRCODE_REQLIMIT = 6
+    _API_THROTTLE_DELAY = 1
 
     def __init__(self, api_ver, api_token, rlim_lock=None, pulse_callback=None):
         self._api_ver = api_ver
@@ -65,15 +69,21 @@ class API:
         return (Group.from_dict(u) for u in result)
 
     def _request(self, method, params):
-        resp = self._http_request(self._API_URL + method, params=dict(
-            params,
-            access_token=self._api_token,
-            v=self._api_ver,
-        ))
-        resp.raise_for_status()
-        resp_json = resp.json()
-        resp_error = resp_json.get("error")
-        resp_body = resp_json.get("response")
+        while True:
+            resp = self._http_request(self._API_URL + method, params=dict(
+                params,
+                access_token=self._api_token,
+                v=self._api_ver,
+            ))
+            resp.raise_for_status()
+            resp_json = resp.json()
+            resp_error = resp_json.get("error")
+            resp_body = resp_json.get("response")
+            err_code = resp_error["error_code"] if resp_error else None
+            if err_code == self._ERRCODE_REQLIMIT:
+                time.sleep(self._API_THROTTLE_DELAY)
+            else:
+                break
         if resp_error:
             raise RuntimeError(_ERR_APICALL.format(
                 resp_error["error_code"], resp_error["error_msg"]
