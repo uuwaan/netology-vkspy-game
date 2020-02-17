@@ -2,10 +2,13 @@ from collections import namedtuple
 import string
 import itertools
 import requests
+import requests.exceptions
 
 _ERR_APICALL = "Запрос завершился с ошибкой {0}: {1}"
 _ERR_NORESPONSE = "Ответ сервера не содержит запрошенные данные:\n{0}"
 _ERR_NOTUSER = "Идентификатор не принадлежит пользователю: {0}"
+
+_MAX_RETRIES = 3
 
 
 class API:
@@ -62,9 +65,7 @@ class API:
         return (Group.from_dict(u) for u in result)
 
     def _request(self, method, params):
-        if self._rlock:
-            self._rlock(1)
-        resp = requests.get(self._API_URL + method, params=dict(
+        resp = self._http_request(self._API_URL + method, params=dict(
             params,
             access_token=self._api_token,
             v=self._api_ver,
@@ -82,6 +83,21 @@ class API:
         if self._pulse:
             self._pulse()
         return resp_body
+
+    def _http_request(self, url, params):
+        for _ in range(0, _MAX_RETRIES):
+            req_exc = None
+            try:
+                if self._rlock:
+                    self._rlock(1)
+                resp = requests.get(url, params)
+                break
+            except requests.exceptions.RequestException as e:
+                req_exc = e
+        if req_exc:
+            raise req_exc
+        else:
+            return resp
 
     def _request_chunked(self, method, params):
         offset, count, elems = 0, 1, []
