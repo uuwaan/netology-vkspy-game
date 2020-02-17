@@ -16,7 +16,7 @@ FILE_STDOUT = "-"
 def main():
     args = configured_cli().parse_args()
     vk_limiter = ratelim.TokenBucket(API_RATE)
-    vk_api = vk.API(API_VER, api_token(), vk_limiter.wait, display_pulse)
+    vk_api = vk.API(API_VER, api_token(), vk_limiter.wait, display_pulse, args.countctl)
     vk_user = vk_api.vk_user(args.user)
     usr_friend_ids = set(vk_user.friend_ids(vk_api))
     grp_list = []
@@ -78,6 +78,11 @@ def configured_cli():
         help="write output to file ('-' for stdout)",
         type=str,
         default="-"
+    )
+    cli_parser.add_argument(
+        "--countctl", "-c",
+        help="enables control of items count reported by API server",
+        action="store_true"
     )
     return cli_parser
 
