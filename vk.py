@@ -8,7 +8,6 @@ import requests.exceptions
 
 _ERR_APICALL = "Запрос завершился с ошибкой {0}: {1}"
 _ERR_NORESPONSE = "Ответ сервера не содержит запрошенные данные:\n{0}"
-_ERR_NOTUSER = "Идентификатор не принадлежит пользователю: {0}"
 
 
 class API:
