@@ -69,7 +69,7 @@ def configured_cli():
     )
     cli_parser.add_argument(
         "--threshold", "-t",
-        help="max number of friends in user's group",
+        help="output groups with no more than this friends",
         type=int,
         default=0,
     )
