@@ -8,6 +8,7 @@ import requests.exceptions
 
 _ERR_APICALL = "Response contains error {0}: {1}"
 _ERR_NODATA = "Server response didn't contain requested data:\n{0}"
+_ERR_MISMATCH = "Server reports item count is {0} but previously it was {1}"
 
 
 class API:
@@ -86,7 +87,12 @@ class API:
             )
             vk_script = " ".join(vk_script.split())
             req_result = self._request("execute", {"code": vk_script})
-            count, offset = int(req_result["count"]), int(req_result["offset"])
+            new_count, offset = int(req_result["count"]), int(req_result["offset"])
+            if new_count != count:
+                if count is not None:
+                    raise RuntimeError(_ERR_MISMATCH.format(new_count, count))
+                else:
+                    count = new_count
             elems.extend(req_result["items"])
         return elems
 
