@@ -113,7 +113,8 @@ class API:
         offset, count, elems = 0, 1, []
         req_str = self._vks_callstr(method, dict(
             params,
-            offset=self._VKS_CALLSTR_ESCAPE + self._VKS_REQ_POSVAR
+            offset=self._VKS_CALLSTR_ESCAPE + self._VKS_REQ_POSVAR,
+            v=self._api_ver,
         ))
         while offset < count:
             vk_script = self._VKS_REQ_CHUNKED.substitute(
