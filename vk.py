@@ -97,17 +97,14 @@ class API:
         return elems
 
     @classmethod
-    def _vks_callstr(cls, method, params, res_field=None):
+    def _vks_callstr(cls, method, params):
         p_pairs = []
         for p_name, p_val in params.items():
             p_name = cls._vks_qstr(p_name, '"')
             p_val = cls._vks_qparam(p_val, '"')
             p_pairs.append(": ".join([p_name, p_val]))
         param_str = "".join(["{", ", ".join(p_pairs), "}"])
-        call_str = "{0}({1})".format(cls._VKS_API_PREFIX + method, param_str)
-        if res_field:
-            call_str = "{0}.{1}".format(call_str, res_field)
-        return call_str
+        return "{0}({1})".format(cls._VKS_API_PREFIX + method, param_str)
 
     @classmethod
     def _vks_qparam(cls, param, qmark):
