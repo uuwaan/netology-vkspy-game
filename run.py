@@ -10,11 +10,16 @@ API_BURST = 3
 VK_USER = "eshmargunov"
 THRESHOLD = 1
 
+
+def display_pulse():
+    print(".", end="", flush=True)
+
+
 with open("api_token.txt", "r") as api_file:
     vk_token = api_file.readline().strip()
 
 vk_limiter = ratelim.TokenBucket(API_RATE, API_BURST)
-vk_api = vk.API(API_VER, vk_token, vk_limiter.wait)
+vk_api = vk.API(API_VER, vk_token, vk_limiter.wait, display_pulse)
 vk_user = vk_api.vk_user(VK_USER)
 usr_friends = set(vk_user.friend_ids())
 grp_list = []
