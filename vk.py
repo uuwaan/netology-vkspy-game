@@ -15,22 +15,28 @@ class API:
     _API_URL = "https://api.vk.com/method/"
 
     _VKS_ACL = 25
+    _VKS_REQ_POSVAR = "pos"
     _VKS_REQ_CHUNKED = string.Template("""
         var acl = $api_limit;
         var pos = $offset;
-        var count = pos + 1;
+        var count = 0;
         var items = [];
-        while (acl > 0 && pos < count) {
+        while (acl > 0) {
             var result = $req;
             acl = acl - 1;
-            items = items + result.items;
-            pos = pos + result.items.length;
-            count = result.count;
+            var broken = (result.count == null);
+            if (!broken) {
+                items = items + result.items;
+                pos = pos + result.items.length;
+                count = result.count;
+            }
+            if (pos == count || broken) {
+                acl = 0;
+            }
         }
         return {"count": count, "offset": pos, "items": items};
     """)
     _VKS_CALLSTR_ESCAPE = "$"
-    _VKS_REQ_POSVAR = "pos"
     _VKS_API_PREFIX = "API."
 
     _ERRCODE_REQLIMIT = 6
@@ -110,13 +116,13 @@ class API:
             return resp
 
     def _request_chunked(self, method, params):
-        offset, count, elems = 0, 1, []
+        offset, count, elems = 0, None, []
         req_str = self._vks_callstr(method, dict(
             params,
             offset=self._VKS_CALLSTR_ESCAPE + self._VKS_REQ_POSVAR,
             v=self._api_ver,
         ))
-        while offset < count:
+        while offset != count:
             vk_script = self._VKS_REQ_CHUNKED.substitute(
                 api_limit=self._VKS_ACL,
                 offset=offset,
@@ -124,7 +130,7 @@ class API:
             )
             vk_script = " ".join(vk_script.split())
             req_result = self._request("execute", {"code": vk_script})
-            count, offset = req_result["count"], req_result["offset"]
+            count, offset = int(req_result["count"]), int(req_result["offset"])
             elems.extend(req_result["items"])
         return elems
 
