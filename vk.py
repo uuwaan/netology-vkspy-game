@@ -9,8 +9,6 @@ _ERR_APICALL = "Запрос завершился с ошибкой {0}: {1}"
 _ERR_NORESPONSE = "Ответ сервера не содержит запрошенные данные:\n{0}"
 _ERR_NOTUSER = "Идентификатор не принадлежит пользователю: {0}"
 
-_MAX_RETRIES = 3
-
 
 class API:
     _API_URL = "https://api.vk.com/method/"
@@ -36,6 +34,7 @@ class API:
 
     _ERRCODE_REQLIMIT = 6
     _API_THROTTLE_DELAY = 1
+    _MAX_RETRIES = 3
 
     def __init__(self, api_ver, api_token, rlim_lock=None, pulse_callback=None):
         self._api_ver = api_ver
@@ -95,7 +94,7 @@ class API:
         return resp_body
 
     def _http_request(self, url, params):
-        for _ in range(0, _MAX_RETRIES):
+        for _ in range(0, self._MAX_RETRIES):
             req_exc = None
             try:
                 if self._rlock:
