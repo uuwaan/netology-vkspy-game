@@ -38,6 +38,7 @@ class API:
     _ERRCODE_REQLIMIT = 6
     _API_THROTTLE_DELAY = 1
     _MAX_RETRIES = 3
+    _REQ_TIMEOUT = 30
 
     def __init__(self, api_ver, api_token, rlim_lock=None, pulse_callback=None):
         self._api_ver = api_ver
@@ -121,7 +122,7 @@ class API:
             try:
                 if self._rlock:
                     self._rlock(1)
-                resp = requests.get(url, params)
+                resp = requests.get(url, params, timeout=self._REQ_TIMEOUT)
                 break
             except requests.exceptions.RequestException as e:
                 req_exc = e
