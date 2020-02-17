@@ -19,10 +19,10 @@ def main():
     vk_limiter = ratelim.TokenBucket(API_RATE, API_BURST)
     vk_api = vk.API(API_VER, api_token(), vk_limiter.wait, display_pulse)
     vk_user = vk_api.vk_user(args.user)
-    usr_friends = set(vk_user.friend_ids(vk_api))
+    usr_friend_ids = set(vk_user.friend_ids(vk_api))
     grp_list = []
     for vk_grp in vk_api.vk_group_iter(vk_user.group_ids(vk_api)):
-        grp_friend_ids = set(vk_grp.member_ids(vk_api)) & usr_friends
+        grp_friend_ids = set(vk_grp.member_ids(vk_api)) & usr_friend_ids
         grp_friends = [u for u in vk_api.vk_user_iter(grp_friend_ids) if u.active]
         if len(grp_friends) <= args.threshold:
             grp_list.append({
