@@ -19,9 +19,9 @@ class API:
         var pos = $offset;
         var count = pos + 1;
         var items = [];
-        while (acl >= $req_cost && pos < count) {
+        while (acl > 0 && pos < count) {
             var result = $req;
-            acl = acl - $req_cost;
+            acl = acl - 1;
             items = items + result.items;
             pos = pos + result.items.length;
             count = result.count;
@@ -114,13 +114,11 @@ class API:
             params,
             offset=self._VKS_CALLSTR_ESCAPE + self._VKS_REQ_POSVAR
         ))
-        req_cost = req_str.count(self._VKS_API_PREFIX)
         while offset < count:
             vk_script = self._VKS_REQ_CHUNKED.substitute(
                 api_limit=self._VKS_ACL,
                 offset=offset,
                 req=req_str,
-                req_cost=req_cost,
             )
             vk_script = " ".join(vk_script.split())
             req_result = self._request("execute", {"code": vk_script})
