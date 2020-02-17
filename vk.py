@@ -3,6 +3,7 @@ import string
 import itertools
 import requests
 
+_ERR_APICALL = "Запрос завершился с ошибкой {0}: {1}"
 _ERR_NORESPONSE = "Ответ сервера не содержит запрошенные данные:\n{0}"
 _ERR_NOTUSER = "Идентификатор не принадлежит пользователю: {0}"
 
@@ -69,12 +70,18 @@ class API:
             v=self._api_ver,
         ))
         resp.raise_for_status()
-        resp_json = resp.json().get("response")
-        if resp_json is None:
+        resp_json = resp.json()
+        resp_error = resp_json.get("error")
+        resp_body = resp_json.get("response")
+        if resp_error:
+            raise RuntimeError(_ERR_APICALL.format(
+                resp_error["error_code"], resp_error["error_msg"]
+            ))
+        if resp_body is None:
             raise RuntimeError(_ERR_NORESPONSE.format(resp.content))
         if self._pulse:
             self._pulse()
-        return resp_json
+        return resp_body
 
     def _request_chunked(self, method, params):
         offset, count, elems = 0, 1, []
