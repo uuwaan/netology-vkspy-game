@@ -41,12 +41,13 @@ class API:
     _MAX_RETRIES = 3
     _REQ_TIMEOUT = 30
 
-    def __init__(self, api_ver, api_tok, rlock=None, pulse=None, cctl=False):
+    def __init__(self, api_ver, api_tok, rlock=None, pulse=None, cctl=False, fast=False):
         self._api_ver = api_ver
         self._api_token = api_tok
         self._rlock = rlock
         self._pulse = pulse
         self._count_ctl = cctl
+        self._request_chunked = self._chreq_vkscript if fast else self._chreq_basic
 
     def vk_user(self, ident):
         return next(self.vk_user_iter([ident]))
@@ -73,7 +74,7 @@ class API:
             result.extend(req_result)
         return (Group.from_dict(u) for u in result)
 
-    def _request_chunked(self, method, params):
+    def _chreq_vkscript(self, method, params):
         offset, count, elems = 0, None, []
         req_str = VKScript.call_string(method, dict(
             params,
@@ -95,6 +96,20 @@ class API:
                 else:
                     count = new_count
             elems.extend(req_result["items"])
+        return elems
+
+    def _chreq_basic(self, method, params):
+        offset, count, elems = 0, None, []
+        while offset != count:
+            req_result = self._request(method, dict(params, offset=offset))
+            new_count, new_items = int(req_result["count"]), req_result["items"]
+            if new_count != count:
+                if count is not None and self._count_ctl:
+                    raise RuntimeError(_ERR_MISMATCH.format(new_count, count))
+                else:
+                    count = new_count
+            elems.extend(new_items)
+            offset += len(new_items)
         return elems
 
     def _request(self, method, params):
