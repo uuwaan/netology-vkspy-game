@@ -3,16 +3,15 @@ import time
 
 
 class TokenBucket:
-    def __init__(self, tps, burst):
+    def __init__(self, tps):
         self._tps = tps
-        self._burst = burst
         self._prev_t = dt.datetime.now()
         self._tokens = 0
 
     def ok(self, tnum):
         now_t = dt.datetime.now()
-        delta_secs = int((now_t - self._prev_t).total_seconds())
-        self._tokens += min(delta_secs * self._tps, self._burst)
+        if int((now_t - self._prev_t).total_seconds()) > 0:
+            self._tokens = self._tps
         if self._tokens < tnum:
             return False
         else:

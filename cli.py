@@ -8,7 +8,6 @@ import ratelim
 
 API_VER = "5.52"
 API_RATE = 3
-API_BURST = 3
 
 FILE_TOKEN = "api_token.txt"
 FILE_STDOUT = "-"
@@ -16,7 +15,7 @@ FILE_STDOUT = "-"
 
 def main():
     args = configured_cli().parse_args()
-    vk_limiter = ratelim.TokenBucket(API_RATE, API_BURST)
+    vk_limiter = ratelim.TokenBucket(API_RATE)
     vk_api = vk.API(API_VER, api_token(), vk_limiter.wait, display_pulse)
     vk_user = vk_api.vk_user(args.user)
     usr_friend_ids = set(vk_user.friend_ids(vk_api))
