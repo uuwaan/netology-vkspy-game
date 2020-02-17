@@ -8,7 +8,7 @@ API_RATE = 3
 API_BURST = 3
 
 VK_USER = "eshmargunov"
-THRESHOLD = 1
+THRESHOLD = 0
 
 
 def display_pulse():
