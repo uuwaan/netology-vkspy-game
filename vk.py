@@ -90,7 +90,6 @@ class API:
             vk_script = " ".join(vk_script.split())
             req_result = self._request("execute", {"code": vk_script})
             count, offset = req_result["count"], req_result["offset"]
-            print(count, offset)
             elems.extend(req_result["items"])
         return elems
 
@@ -127,7 +126,6 @@ class API:
 class User(namedtuple("User", "first_name last_name uid active api")):
     @classmethod
     def from_dict(cls, udict, api):
-        print(udict)
         act = False if udict.get("deactivated") else True
         return cls(udict["first_name"], udict["last_name"], udict["id"], act, api)
 
