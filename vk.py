@@ -41,11 +41,11 @@ class API:
     _MAX_RETRIES = 3
     _REQ_TIMEOUT = 30
 
-    def __init__(self, api_ver, api_token, rlim_lock=None, pulse_callback=None):
+    def __init__(self, api_ver, api_tok, rlock=None, pulse=None):
         self._api_ver = api_ver
-        self._api_token = api_token
-        self._rlock = rlim_lock
-        self._pulse = pulse_callback
+        self._api_token = api_tok
+        self._rlock = rlock
+        self._pulse = pulse
 
     def vk_user(self, ident):
         return next(self.vk_user_iter([ident]))
