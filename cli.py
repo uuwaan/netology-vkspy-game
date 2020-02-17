@@ -15,8 +15,8 @@ FILE_STDOUT = "-"
 
 def main():
     args = configured_cli().parse_args()
-    vk_limiter = ratelim.TokenBucket(API_RATE)
-    vk_api = vk.API(API_VER, api_token(), vk_limiter.wait, display_pulse, args.countctl)
+    lim = ratelim.TokenBucket(API_RATE)
+    vk_api = vk.API(API_VER, api_token(), lim.wait, pulse, args.countctl)
     vk_user = vk_api.vk_user(args.user)
     usr_friend_ids = set(vk_user.friend_ids(vk_api))
     grp_list = []
@@ -33,7 +33,7 @@ def main():
     write_output(args.output, grp_list)
 
 
-def display_pulse():
+def pulse():
     print(".", end="", flush=True)
 
 
