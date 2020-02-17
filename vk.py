@@ -71,6 +71,25 @@ class API:
             result.extend(req_result)
         return (Group.from_dict(u) for u in result)
 
+    def _request_chunked(self, method, params):
+        offset, count, elems = 0, None, []
+        req_str = VKScript.call_string(method, dict(
+            params,
+            offset=VKScript.CALLSTR_ESCAPE + self._VKS_REQ_POSVAR,
+            v=self._api_ver,
+        ))
+        while offset != count:
+            vk_script = self._VKS_REQ_CHUNKED.substitute(
+                api_limit=VKScript.API_CALL_LIMIT,
+                offset=offset,
+                req=req_str,
+            )
+            vk_script = " ".join(vk_script.split())
+            req_result = self._request("execute", {"code": vk_script})
+            count, offset = int(req_result["count"]), int(req_result["offset"])
+            elems.extend(req_result["items"])
+        return elems
+
     def _request(self, method, params):
         while True:
             resp = self._http_request(self._API_URL + method, params=dict(
@@ -111,25 +130,6 @@ class API:
             raise req_exc
         else:
             return resp
-
-    def _request_chunked(self, method, params):
-        offset, count, elems = 0, None, []
-        req_str = VKScript.call_string(method, dict(
-            params,
-            offset=VKScript.CALLSTR_ESCAPE + self._VKS_REQ_POSVAR,
-            v=self._api_ver,
-        ))
-        while offset != count:
-            vk_script = self._VKS_REQ_CHUNKED.substitute(
-                api_limit=VKScript.API_CALL_LIMIT,
-                offset=offset,
-                req=req_str,
-            )
-            vk_script = " ".join(vk_script.split())
-            req_result = self._request("execute", {"code": vk_script})
-            count, offset = int(req_result["count"]), int(req_result["offset"])
-            elems.extend(req_result["items"])
-        return elems
 
 
 class User(namedtuple("User", "first_name last_name uid active")):

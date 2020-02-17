@@ -38,9 +38,9 @@ def display_pulse():
 
 
 def write_output(file_path, group_list):
-    should_close = False
     if file_path == FILE_STDOUT:
         out_file = sys.stdout
+        should_close = False
     else:
         out_file = open(file_path, "w")
         should_close = True
