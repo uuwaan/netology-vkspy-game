@@ -1,6 +1,8 @@
 import datetime as dt
 import time
 
+_ERR_EXCEED = "Number of requested tokens {0} exceeds maximum of {1}"
+
 
 class TokenBucket:
     def __init__(self, tps):
@@ -9,6 +11,8 @@ class TokenBucket:
         self._tokens = 0
 
     def ok(self, tnum):
+        if tnum > self._tps:
+            raise ValueError(_ERR_EXCEED.format(tnum, self._tps))
         now_t = dt.datetime.now()
         if int((now_t - self._prev_t).total_seconds()) > 0:
             self._tokens = self._tps
