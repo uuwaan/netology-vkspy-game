@@ -90,11 +90,7 @@ class API:
             vk_script = " ".join(vk_script.split())
             req_result = self._request("execute", {"code": vk_script})
             new_count, offset = int(req_result["count"]), int(req_result["offset"])
-            if new_count != count:
-                if count is not None and self._count_ctl:
-                    raise RuntimeError(_ERR_MISMATCH.format(new_count, count))
-                else:
-                    count = new_count
+            count = self._checked_count(count, new_count)
             elems.extend(req_result["items"])
         return elems
 
@@ -103,14 +99,16 @@ class API:
         while offset != count:
             req_result = self._request(method, dict(params, offset=offset))
             new_count, new_items = int(req_result["count"]), req_result["items"]
-            if new_count != count:
-                if count is not None and self._count_ctl:
-                    raise RuntimeError(_ERR_MISMATCH.format(new_count, count))
-                else:
-                    count = new_count
+            count = self._checked_count(count, new_count)
             elems.extend(new_items)
             offset += len(new_items)
         return elems
+
+    def _checked_count(self, count, new_count):
+        if new_count != count and count is not None and self._count_ctl:
+            raise RuntimeError(_ERR_MISMATCH.format(new_count, count))
+        else:
+            return new_count
 
     def _request(self, method, params):
         while True:
