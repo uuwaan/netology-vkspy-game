@@ -92,7 +92,7 @@ def configured_cli():
     )
     cli_parser.add_argument(
         "--fast", "-f",
-        help="accelerate data requests with VKScript in expense of error detection",
+        help="accelerate data requests with VKScript",
         action="store_true"
     )
     return cli_parser

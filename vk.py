@@ -23,13 +23,13 @@ class API:
         while (acl > 0) {
             var result = $req;
             acl = acl - 1;
-            var broken = (result.count == null);
-            if (!broken) {
-                items = items + result.items;
-                pos = pos + result.items.length;
-                count = result.count;
+            if (result.count == null) {
+                return result;
             }
-            if (pos == count || broken) {
+            items = items + result.items;
+            pos = pos + result.items.length;
+            count = result.count;
+            if (pos == count) {
                 acl = 0;
             }
         }
