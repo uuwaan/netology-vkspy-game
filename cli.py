@@ -12,12 +12,18 @@ API_RATE = 3
 FILE_TOKEN = "api_token.txt"
 FILE_STDOUT = "-"
 
+MSG_NOTACTIVE = "User is not active (maybe deleted or banned)."
+
 
 def main():
     args = configured_cli().parse_args()
     lim = ratelim.TokenBucket(API_RATE)
     vk_api = vk.API(API_VER, api_token(), lim.wait, pulse, args.countctl, args.fast)
     vk_user = vk_api.vk_user(args.user)
+    if not vk_user.active:
+        print()
+        print(MSG_NOTACTIVE)
+        return
     usr_friend_ids = set(vk_user.friend_ids(vk_api))
     grp_list = []
     for vk_grp in vk_api.vk_group_iter(vk_user.group_ids(vk_api)):
