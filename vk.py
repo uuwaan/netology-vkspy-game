@@ -2,6 +2,7 @@ import itertools
 import string
 import time
 from collections import namedtuple
+from collections.abc import Mapping, Sequence
 
 import requests
 import requests.exceptions
@@ -9,6 +10,7 @@ import requests.exceptions
 _ERR_APICALL = "Response contains error {0}: {1}"
 _ERR_NODATA = "Server response didn't contain requested data:\n{0}"
 _ERR_MISMATCH = "Server reports item count is {0} but previously it was {1}"
+_ERR_DATASTRUCT = "Server returned unexpected data structure"
 
 
 class API:
@@ -58,9 +60,12 @@ class API:
     def vk_user_iter(self, idents):
         result = []
         for id_chunk in _ichopped(idents, 1000):
-            req_result = self._request("users.get", {
-                "user_ids": ",".join(str(uid) for uid in id_chunk),
-            })
+            req_result = self._request(
+                "users.get", {
+                    "user_ids": ",".join(str(uid) for uid in id_chunk)
+                },
+                Sequence,
+            )
             result.extend(req_result)
         return (User.from_dict(u) for u in result)
 
@@ -70,10 +75,13 @@ class API:
     def vk_group_iter(self, idents):
         result = []
         for id_chunk in _ichopped(idents, 1000):
-            req_result = self._request("groups.getById", {
-                "group_ids": ",".join(str(uid) for uid in id_chunk),
-                "fields": "members_count",
-            })
+            req_result = self._request(
+                "groups.getById", {
+                    "group_ids": ",".join(str(uid) for uid in id_chunk),
+                    "fields": "members_count",
+                },
+                Sequence,
+            )
             result.extend(req_result)
         return (Group.from_dict(u) for u in result)
 
@@ -91,7 +99,9 @@ class API:
                 req=req_str,
             )
             vk_script = " ".join(vk_script.split())
-            req_result = self._request("execute", {"code": vk_script})
+            req_result = self._request(
+                "execute", {"code": vk_script}, Mapping
+            )
             new_count = int(req_result["count"])
             offset = int(req_result["offset"])
             count = self._checked_count(count, new_count)
@@ -101,7 +111,9 @@ class API:
     def _chreq_basic(self, method, params):
         offset, count, elems = 0, None, []
         while offset != count:
-            req_result = self._request(method, dict(params, offset=offset))
+            req_result = self._request(
+                method, dict(params, offset=offset), Mapping
+            )
             new_count = int(req_result["count"])
             new_items = req_result["items"]
             count = self._checked_count(count, new_count)
@@ -115,7 +127,7 @@ class API:
         else:
             return new_count
 
-    def _request(self, method, params):
+    def _request(self, method, params, exp_type=None):
         while True:
             resp = self._http_request(self._API_URL + method, params=dict(
                 params,
@@ -139,6 +151,8 @@ class API:
             raise RuntimeError(_ERR_NODATA.format(resp.content))
         if self._pulse:
             self._pulse()
+        if exp_type and not isinstance(resp_body, exp_type):
+            raise RuntimeError(_ERR_DATASTRUCT)
         return resp_body
 
     def _http_request(self, url, params):
