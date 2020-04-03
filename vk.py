@@ -1,8 +1,8 @@
+import itertools
+import string
+import time
 from collections import namedtuple
 
-import string
-import itertools
-import time
 import requests
 import requests.exceptions
 

@@ -1,10 +1,10 @@
-import sys
-import os
-import argparse
 import json
+import os
+import sys
+from argparse import ArgumentParser
 
-import vk
 import ratelim
+import vk
 
 API_VER = "5.52"
 API_RATE = 3
@@ -68,7 +68,7 @@ def api_token():
 
 
 def configured_cli():
-    cli_parser = argparse.ArgumentParser(
+    cli_parser = ArgumentParser(
         prog=progname(),
         description="VK spy game"
     )
