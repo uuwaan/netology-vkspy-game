@@ -18,7 +18,10 @@ MSG_NOTACTIVE = "User is not active (maybe deleted or banned)."
 def main():
     args = configured_cli().parse_args()
     lim = ratelim.TokenBucket(API_RATE)
-    vk_api = vk.API(API_VER, api_token(), lim.wait, pulse, args.countctl, args.fast)
+    vk_api = vk.API(API_VER, api_token(),
+                    lim.wait, pulse,
+                    cctl=args.countctl,
+                    fast=args.fast)
     vk_user = vk_api.vk_user(args.user)
     if not vk_user.active:
         print()
