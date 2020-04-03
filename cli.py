@@ -31,7 +31,9 @@ def main():
     grp_list = []
     for vk_grp in vk_api.vk_group_iter(vk_user.group_ids(vk_api)):
         grp_friend_ids = set(vk_grp.member_ids(vk_api)) & usr_friend_ids
-        grp_friends = [u for u in vk_api.vk_user_iter(grp_friend_ids) if u.active]
+        grp_friends = [
+            u for u in vk_api.vk_user_iter(grp_friend_ids) if u.active
+        ]
         if len(grp_friends) <= args.threshold:
             grp_list.append({
                 "name": vk_grp.name,

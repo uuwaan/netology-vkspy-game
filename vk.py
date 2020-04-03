@@ -92,7 +92,8 @@ class API:
             )
             vk_script = " ".join(vk_script.split())
             req_result = self._request("execute", {"code": vk_script})
-            new_count, offset = int(req_result["count"]), int(req_result["offset"])
+            new_count = int(req_result["count"])
+            offset = int(req_result["offset"])
             count = self._checked_count(count, new_count)
             elems.extend(req_result["items"])
         return elems
@@ -101,7 +102,8 @@ class API:
         offset, count, elems = 0, None, []
         while offset != count:
             req_result = self._request(method, dict(params, offset=offset))
-            new_count, new_items = int(req_result["count"]), req_result["items"]
+            new_count = int(req_result["count"])
+            new_items = req_result["items"]
             count = self._checked_count(count, new_count)
             elems.extend(new_items)
             offset += len(new_items)
