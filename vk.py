@@ -213,9 +213,8 @@ class VKScript:
 
 def _ichopped(iterable, chunk_size):
     it = iter(iterable)
-    result = []
     while True:
         chunk = list(itertools.islice(it, chunk_size))
         if not chunk:
-            return result
-        result.append(chunk)
+            return
+        yield chunk
