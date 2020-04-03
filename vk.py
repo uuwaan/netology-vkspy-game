@@ -14,7 +14,7 @@ _ERR_DATASTRUCT = "Server returned unexpected data structure"
 
 
 class API:
-    _API_URL = "https://api.vk.com/method/"
+    _URL = "https://api.vk.com/method/"
 
     _VKS_REQ_POSVAR = "pos"
     _VKS_REQ_CHUNKED = string.Template("""
@@ -39,7 +39,7 @@ class API:
     """)
 
     _ERRCODE_REQLIMIT = 6
-    _API_THROTTLE_DELAY = 1
+    _THROTTLE_DELAY = 1
     _MAX_RETRIES = 3
     _REQ_TIMEOUT = 30
 
@@ -129,7 +129,7 @@ class API:
 
     def _request(self, method, params, exp_type=None):
         while True:
-            resp = self._http_request(self._API_URL + method, params=dict(
+            resp = self._http_request(self._URL + method, params=dict(
                 params,
                 access_token=self._api_token,
                 v=self._api_ver,
@@ -140,7 +140,7 @@ class API:
             resp_body = resp_json.get("response")
             err_code = resp_error["error_code"] if resp_error else None
             if err_code == self._ERRCODE_REQLIMIT:
-                time.sleep(self._API_THROTTLE_DELAY)
+                time.sleep(self._THROTTLE_DELAY)
             else:
                 break
         if resp_error:
